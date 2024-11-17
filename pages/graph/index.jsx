@@ -1,98 +1,81 @@
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+
 import { Chart, registerables } from "chart.js";
 import PieModal from "../../components/pieModal";
 
 // Register Chart.js components
 Chart.register(...registerables);
 
+const generateEEGAmplitude = (t) => {
+  const baseWave = 50 + 20 * Math.sin(t / 20); // Slower sine wave for 20 seconds
+  const noise = Math.random() * 15 - 7.5; // Random noise in range [-7.5, 7.5]
+  return Math.round(baseWave + noise);
+};
+const generateInitialData = () => {
+  const data = [];
+  for (let i = 0; i < 60; i++) {
+    data.push({
+      Frequency: i * 2, 
+      Amplitude: generateEEGAmplitude(i),
+    });
+  }
+  return data;
+};
+
 export default function RealTimeSinusoidalWave() {
   const chartRef = useRef(null);
-  const animationFrameRef = useRef(null);
+  const router = useRouter();
+  const [count, setCount] = useState(""); // Countdown state
+  const [data, setData] = useState(generateInitialData());
+  const [time, setTime] = useState(0); // Initialize time for sine wave progression
 
   useEffect(() => {
-    const ctx = chartRef.current.getContext("2d");
+    const interval = setInterval(() => {
+      setTime((prevTime) => {
+        const newDataPoint = {
+          Frequency: data[data.length - 1].Frequency + 2,
+          Amplitude: generateEEGAmplitude(prevTime),
+        };
+// Keep the last 60 points for the sliding window
+        const updatedData = [...data, newDataPoint].slice(-60);
+        setData(updatedData);
 
-    // Configuration for the sinusoidal wave
-    const amplitude = 1; // Amplitude of the wave
-    const frequency = 2; // Frequency in Hz (cycles per second)
-    const timeSpan = 10; // Time span in seconds
-    const updateInterval = 50; // Interval in ms for updates
-    const dataPoints = 100; // Number of points in the wave
+        return prevTime + 1;
+      });
+    }, 333); // Update every 333ms for smooth progression
 
-    // Initialize the time array and values
-    let time = Array.from({ length: dataPoints }, (_, i) => i / (dataPoints / timeSpan));
-    let data = time.map(t => amplitude * Math.sin(2 * Math.PI * frequency * t));
+    return () => clearInterval(interval);
+  }, [data]);
+  useEffect(() => {
+    console.log(router.query[0]);
+    console.log(router.query[1]);
 
-    // Create the Chart.js line chart
-    const chart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: time,
-        datasets: [
-          {
-            label: "Real-Time Brainwave Simulation",
-            data: data,
-            borderColor: "#36A2EB",
-            fill: false,
-            tension: 0, // No smoothing for the wave
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        animation: false, // Disable animation for real-time updates
-        plugins: {
-          legend: {
-            display: true,
-            position: "top",
-          },
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: "Time (s)",
-            },
-          },
-          y: {
-            title: {
-              display: true,
-              text: "Amplitude (mV)",
-            },
-            min: -amplitude - 0.5, // Extend y-axis range slightly
-            max: amplitude + 0.5,
-          },
-        },
-      },
-    });
+    
+    if (!router.isReady) return; // Wait for router query to be ready
+    const timeInMinutes = parseInt(router.query[0] || "1"); // Default to 1 minute if no query
+    const totalSeconds = timeInMinutes * 60; // Convert minutes to seconds
 
-    // Function to update the chart data in real time
-    const updateChart = () => {
-      const currentTime = time[time.length - 1] + timeSpan / dataPoints; // Increment the time
-      time = [...time.slice(1), currentTime]; // Shift time array to simulate scrolling
-      data = time.map(t => amplitude * Math.sin(2 * Math.PI * frequency * t)); // Recalculate data
+    // Countdown function
+    let remainingTime = totalSeconds;
+    const countdownInterval = setInterval(() => {
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
 
-      chart.data.labels = time; // Update time labels
-      chart.data.datasets[0].data = data; // Update wave data
-      chart.update(); // Update the chart
+      // Update countdown state
+      setCount(`${minutes}:${seconds < 10 ? "0" + seconds : seconds}`);
+      remainingTime--;
 
-      // Schedule the next update
-      animationFrameRef.current = setTimeout(updateChart, updateInterval);
-    };
+      if (remainingTime < 0) {
+        clearInterval(countdownInterval); // Stop countdown when time is up
+        setCount("Time's Up!");
+      }
+    }, 1000); // Update every second
 
-    // Start updating the chart
-    updateChart();
-    // const myModal = new bootstrap.Modal(
-    //     document.getElementById("modalId"),
-    //     options,
-    // );
-    // Cleanup function to stop updates when the component unmounts
-    return () => {
-      clearTimeout(animationFrameRef.current);
-      chart.destroy();
-    };
-  }, []);
+    return () => clearInterval(countdownInterval); // Cleanup on component unmount
+  }, [router.isReady]);
 
   return (
     <div>
@@ -102,26 +85,63 @@ export default function RealTimeSinusoidalWave() {
           rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
           crossOrigin="anonymous"
-
         />
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-
-
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossOrigin="anonymous"
+        ></script>
       </Head>
       <div className="d-flex flex-column justify-content-center align-items-center vh-100">
         {/* Chart Section */}
-        <div className="w-75 text-center border mb-3 p-5">
-          <canvas ref={chartRef} id="lineChart"></canvas>
-        </div>
+        <div style={{ backgroundColor: "#fff ", padding: "20px" }}>
+        <LineChart
+  width={830}
+  height={250}
+  data={data}
+  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+>
+  <CartesianGrid stroke="#fff" strokeDasharray="0" />
+  
+  {/* X-Axis */}
+  <XAxis 
+    dataKey="Frequency" 
+    tick={false} 
+    label={{ value: "Time ", position: "insideBottom", offset: 0 }} 
+  />
 
+  {/* Y-Axis */}
+  <YAxis 
+    tick={false} 
+    label={{ value: "Focus", angle: -90, position: "insideLeft", offset: -10 }} 
+  />
+  
+  <Tooltip contentStyle={{ backgroundColor: "#fff", border: "1px solid #0A014F" }} />
+  <Legend />
+  <Line
+    type="linear"
+    dataKey="Amplitude"
+    stroke="#4682b4"
+    strokeWidth={3}
+    dot={false}
+  />
+</LineChart>
+
+    </div>
+        <h1>{router.query[1]}</h1>
         {/* Timer Section */}
-        <h2>00:00</h2>
+        <h2>{count}</h2>
 
         {/* Buttons Section */}
         <div className="d-flex justify-content-center mt-3">
-          <button className="btn btn-secondary mx-2 " data-bs-toggle="modal" data-bs-target="#modalId">End session</button> 
+          <button
+            className="btn btn-secondary mx-2"
+            data-bs-toggle="modal"
+            data-bs-target="#modalId"
+          >
+            End session
+          </button>
           {/* Trigger Modal */}
-          <button className="btn btn-primary mx-2">START/STOP</button>
         </div>
 
         {/* PieModal Component */}
@@ -130,3 +150,8 @@ export default function RealTimeSinusoidalWave() {
     </div>
   );
 }
+
+
+
+
+

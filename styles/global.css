@@ -15,8 +15,13 @@ body {
     Droid Sans,
     Helvetica Neue,
     sans-serif;
+    background-image: url('../public/bg-circuit.png');
+    background-size: cover;
 }
 
+span.recharts-legend-item-text{
+  color: #fff !important;
+}
 a {
   color: inherit;
   text-decoration: none;
@@ -29,4 +34,44 @@ a {
 img {
   max-width: 100%;
   height: auto;
+}
+/* Forms */
+/* Forms */
+.form-control {
+  border: 2px solid #1a034f; /* Dark blue border */
+  border-radius: 0; /* Removes rounded corners */
+  box-shadow: none; /* Removes default Bootstrap shadow */
+}
+
+.form-control:focus {
+  border-color: #1a034f;
+  box-shadow: none; /* No shadow for focused inputs */
+}
+
+/* Buttons */
+.btn {
+  background-color: #E0194F; /* Red button background */
+  border: 2px solid #1a034f; /* Dark blue border */
+  color: #ffffff; /* White text */
+  border-radius: 0; /* Removes rounded corners */
+  box-shadow: none; /* Removes default shadow */
+}
+
+.btn:hover {
+  background-color: #E0194F; /* Darker red for hover */
+  color: #ffffff; /* Ensures text stays white */
+}
+
+.btn:focus,
+.btn:active,
+.btn:visited
+.btn:checked {
+  background-color: #a02f3a !important; /* Keeps focus consistent with hover */
+  border-color: #0A014F !important;
+  box-shadow: none; /* Removes shadow for focus and active state */
+  outline: none; /* Removes default outline on focus */
+}
+
+.btn:focus:not(:focus-visible) {
+  outline: none; /* Ensures no visible outline for modern browsers */
 }

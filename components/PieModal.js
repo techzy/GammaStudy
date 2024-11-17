@@ -19,13 +19,13 @@ export default function PieModal() {
     new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["Red", "Blue", "Yellow"],
+        labels: ["Focus", "Mild Focus", "Not Focus"],
         datasets: [
           {
             label: "Sample Data",
             data: [30, 50, 20],
-            backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-            hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+            backgroundColor: ["#E0194F", "#0A014F", "#E7E6F7"],
+            hoverBackgroundColor: ["#E0194F", "#0A014F", "#E7E6F7"],
           },
         ],
       },
@@ -44,7 +44,7 @@ export default function PieModal() {
   return (
     <>
       <div
-        className="modal fade"
+        className="modal  fade"
         id="modalId"
         tabIndex="-1"
         data-bs-backdrop="static"
@@ -54,7 +54,7 @@ export default function PieModal() {
         aria-hidden="true"
       >
         <div
-          className="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+          className="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-md"
           role="document"
         >
           <div className="modal-content">

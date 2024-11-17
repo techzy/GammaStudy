@@ -1,4 +1,6 @@
 import Head from "next/head";
+import Link from "next/link";
+
 
 export default function Sample() {
   return (
@@ -14,13 +16,15 @@ export default function Sample() {
       <div
         className="d-flex justify-content-center align-items-center vh-100"
       >
-        <div className="d-flex flex-column w-50">
+        <div className="d-flex flex-column w-25">
           <h1 className="text-center">Registration</h1>
           <input className="form-control my-2" type="text" placeholder="Username" />
           <input className="form-control my-2" type="password" placeholder="Password" />
           <input className="form-control my-2" type="password" placeholder="Confirm Password" />
           <button className="btn btn-primary my-2" type="submit">
-            Submit
+          <Link href="/login" className="text-white text-decoration-none">
+              Submit
+            </Link>
           </button>
         </div>
       </div>
